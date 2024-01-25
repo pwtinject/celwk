@@ -1,148 +1,136 @@
-# Name: K4YT3X Hardened OpenSSH Configuration
-# Author: K4YT3X
-# Date Created: October 5, 2020
-# Last Updated: December 21, 2023
+#	$OpenBSD: sshd_config,v 1.101 2017/03/14 07:19:07 djm Exp $
 
-# Licensed under the GNU General Public License Version 3 (GNU GPL v3),
-#   available at: https://www.gnu.org/licenses/gpl-3.0.txt
-# (C) 2020-2023 K4YT3X
+# This is the sshd server system-wide configuration file.  See
+# sshd_config(5) for more information.
 
-########## Binding ##########
+# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
-# SSH server listening address and port
-#Port 22
+# The strategy used for options in the default sshd_config shipped with
+# OpenSSH is to specify options with their default value where
+# possible, but leave them commented.  Uncommented options override the
+# default value.
+
+Port 22
+Port 3369
+Port 2269
+Port 169
+Port 99
+#AddressFamily any
 #ListenAddress 0.0.0.0
 #ListenAddress ::
 
-# only listen to IPv4
-#AddressFamily inet
+#HostKey /etc/ssh/ssh_host_rsa_key
+#HostKey /etc/ssh/ssh_host_ecdsa_key
+#HostKey /etc/ssh/ssh_host_ed25519_key
 
-# only listen to IPv6
-#AddressFamily inet6
+# Ciphers and keying
+#RekeyLimit default none
 
-########## Features ##########
+# Logging
+#SyslogFacility AUTH
+#LogLevel INFO
 
-# accept locale-related environment variables
-AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
-AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
-AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
-AcceptEnv XMODIFIERS
+# Authentication:
 
-# disallow ssh-agent forwarding to prevent lateral movement
-AllowAgentForwarding no
+#LoginGraceTime 2m
+PermitRootLogin yes
+#StrictModes yes
+#MaxAuthTries 6
+#MaxSessions 10
 
-# prevent TCP ports from being forwarded over SSH tunnels
-# **please be aware that disabling TCP forwarding does not prevent port forwarding**
-# any user with an interactive login shell can spin up his/her own instance of sshd
-AllowTcpForwarding no
+#PubkeyAuthentication yes
 
-# prevent StreamLocal (Unix-domain socket) forwarding
-AllowStreamLocalForwarding no
+# Expect .ssh/authorized_keys2 to be disregarded by default in future.
+#AuthorizedKeysFile	.ssh/authorized_keys .ssh/authorized_keys2
 
-# disables all forwarding features
-# overrides all other forwarding switches
-DisableForwarding yes
+#AuthorizedPrincipalsFile none
 
-# disallow remote hosts from connecting to forwarded ports
-# i.e. forwarded ports are forced to bind to 127.0.0.1 instad of 0.0.0.0
-GatewayPorts no
+#AuthorizedKeysCommand none
+#AuthorizedKeysCommandUser nobody
 
-# prevent tun device forwarding
-PermitTunnel no
+# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts
+#HostbasedAuthentication no
+# Change to yes if you don't trust ~/.ssh/known_hosts for
+# HostbasedAuthentication
+#IgnoreUserKnownHosts no
+# Don't read the user's ~/.rhosts and ~/.shosts files
+#IgnoreRhosts yes
 
-# suppress MOTD
-PrintMotd no
+# To disable tunneled clear text passwords, change to no here!
+PasswordAuthentication yes
+#PermitEmptyPasswords no
 
-# disable X11 forwarding since it is not necessary
-X11Forwarding no
-
-########## Authentication ##########
-
-# permit only the specified users to login
-#AllowUsers k4yt3x
-
-# permit only users within the specified groups to login
-#AllowGroups k4yt3x
-
-# uncomment the following options to permit only pubkey authentication
-# be aware that this will disable password authentication
-#   - AuthenticationMethods: permitted authentication methods
-#   - PasswordAuthentication: set to no to disable password authentication
-#   - UsePAM: set to no to disable all PAM authentication, also disables PasswordAuthentication when set to no
-#AuthenticationMethods publickey
-#PasswordAuthentication no
-#UsePAM no
-
-# PAM authentication enabled to make password authentication available
-# remove this if password authentication is not needed
-UsePAM yes
-
-# challenge-response authentication backend it not configured by default
-# therefore, it is set to "no" by default to avoid the use of an unconfigured backend
+# Change to yes to enable challenge-response passwords (beware issues with
+# some PAM modules and threads)
 ChallengeResponseAuthentication no
 
-# set maximum authenticaion retries to prevent brute force attacks
-MaxAuthTries 3
+# Kerberos options
+#KerberosAuthentication no
+#KerberosOrLocalPasswd yes
+#KerberosTicketCleanup yes
+#KerberosGetAFSToken no
 
-# disallow connecting using empty passwords
-PermitEmptyPasswords no
+# GSSAPI options
+#GSSAPIAuthentication no
+#GSSAPICleanupCredentials yes
+#GSSAPIStrictAcceptorCheck yes
+#GSSAPIKeyExchange no
 
-# prevent root from being logged in via SSH
-PermitRootLogin no
+# Set this to 'yes' to enable PAM authentication, account processing,
+# and session processing. If this is enabled, PAM authentication will
+# be allowed through the ChallengeResponseAuthentication and
+# PasswordAuthentication.  Depending on your PAM configuration,
+# PAM authentication via ChallengeResponseAuthentication may bypass
+# the setting of "PermitRootLogin without-password".
+# If you just want the PAM account and session checks to run without
+# PAM authentication, then enable this but set PasswordAuthentication
+# and ChallengeResponseAuthentication to 'no'.
+UsePAM yes
 
-# enable pubkey authentication
-PubkeyAuthentication yes
+#AllowAgentForwarding yes
+AllowTcpForwarding yes
+#GatewayPorts no
+X11Forwarding yes
+#X11DisplayOffset 10
+#X11UseLocalhost yes
+#PermitTTY yes
+PrintMotd no
+#PrintLastLog yes
+#TCPKeepAlive yes
+#UseLogin no
+#PermitUserEnvironment no
+#Compression delayed
+#ClientAliveInterval 0
+#ClientAliveCountMax 3
+#UseDNS no
+#PidFile /var/run/sshd.pid
+#MaxStartups 10:30:100
+#PermitTunnel no
+#ChrootDirectory none
+#VersionAddendum none
 
-########## Cryptography ##########
+# no default banner path
+#Banner none
 
-# explicitly define cryptography algorithms to avoid the use of weak algorithms
-# AES CTR modes have been removed to mitigate the Terrapin attack
-#   https://terrapin-attack.com/
-Ciphers aes256-gcm@openssh.com,aes128-gcm@openssh.com
-HostKeyAlgorithms rsa-sha2-512,rsa-sha2-256,ssh-ed25519
-MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,umac-128-etm@openssh.com
-
-# short moduli should be deactivated before enabling the use of diffie-hellman-group-exchange-sha256
-# see this link for more details: https://github.com/k4yt3x/sshd_config#deactivating-short-diffie-hellman-moduli
-#KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha256
-KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256
-
-########## Connection Preferences ##########
-
-# number of client alive messages sent without client responding
-ClientAliveCountMax 2
-
-# send a keepalive message to the client when the session has been idle for 300 seconds
-# this prevents/detects connection timeouts
-ClientAliveInterval 300
-
-# compression before encryption might cause security issues
-Compression no
-
-# prevent SSH trust relationships from allowing lateral movements
-IgnoreRhosts yes
-
-# log verbosely for addtional information
-#LogLevel VERBOSE
-
-# allow a maximum of two multiplexed sessions over a single TCP connection
-MaxSessions 2
-
-# enforce SSH server to only use SSH protocol version 2
-# SSHv1 contains security issues and should be avoided at all costs
-# SSHv1 is disabled by default after OpenSSH 7.0, but this option is
-#   specified anyways to ensure this configuration file's compatibility
-#   with older versions of OpenSSH server
-Protocol 2
+# Allow client to pass locale environment variables
+AcceptEnv LANG LC_*
 
 # override default of no subsystems
-# path to the sftp-server binary depends on your distribution
-#Subsystem sftp /usr/lib/openssh/sftp-server
-#Subsystem sftp /usr/libexec/openssh/sftp-server
-Subsystem sftp internal-sftp
+Subsystem	sftp	/usr/lib/openssh/sftp-server
 
-# let ClientAliveInterval handle keepalive
-TCPKeepAlive no
+# Example of overriding settings on a per-user basis
+#Match User anoncvs
+#	X11Forwarding no
+#	AllowTcpForwarding no
+#	PermitTTY no
+#	ForceCommand cvs server
+#
+# Google Compute Engine times out connections after 10 minutes of inactivity.
+# Keep alive ssh connections by sending a packet every 2 minutes.
+ClientAliveInterval 420
+ClientAliveInterval 120
 
-# disable reverse DNS lookups
-UseDNS no
+#TrustedUserCAKeys /etc/ssh/lightsail_instance_ca.pub
+#
+Banner /etc/issue.net
+AllowTcpForwarding yes
